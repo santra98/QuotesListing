@@ -1,122 +1,136 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState, useEffect } from "react";
+import Header from "./components/Header";
+import QuoteCard from "./components/QuoteCard";
+import SkeletonCard from "./components/SkeletonCard";
 
-function App() {
-  const [count, setCount] = useState(0)
+const API_URL = "https://api.freeapi.app/api/v1/public/quotes";
+
+export default function App() {
+  const [quotes, setQuotes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const load = () => {
+    setError(null);
+    setLoading(true);
+    setQuotes([]);
+
+    fetch(API_URL)
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then((json) => {
+        const items = json?.data?.data;
+        if (!Array.isArray(items) || items.length === 0)
+          throw new Error("No quotes");
+        setQuotes(items);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setError("Failed to load quotes. Please try again.");
+        setLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    load();
+  }, []);
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="min-h-screen" style={{ backgroundColor: "#f0ecf8" }}>
+      <Header total={quotes.length} />
 
-      <div className="ticks"></div>
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        {/* Loading */}
+        {loading && (
+          <div className="columns-1 sm:columns-2 lg:columns-3 gap-5 space-y-5">
+            {Array(9)
+              .fill(null)
+              .map((_, i) => (
+                <SkeletonCard key={i} />
+              ))}
+          </div>
+        )}
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        {error && (
+          <div className="flex flex-col items-center justify-center py-28 gap-5 text-center">
+            <div className="text-6xl">📜</div>
+            <div>
+              <h3
+                className="text-xl font-semibold mb-1"
+                style={{
+                  fontFamily: "Playfair Display, serif",
+                  color: "#1e1a2e",
+                }}
+              >
+                Could not load quotes
+              </h3>
+              <p className="text-sm" style={{ color: "#a598cc" }}>
+                {error}
+              </p>
+            </div>
+            <button
+              onClick={load}
+              className="px-6 py-2.5 text-sm font-medium rounded-full transition-colors text-white"
+              style={{ backgroundColor: "#7c6db0" }}
+            >
+              Try again
+            </button>
+          </div>
+        )}
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+        {!loading && !error && quotes.length > 0 && (
+          <>
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h2
+                  className="text-2xl font-semibold"
+                  style={{
+                    fontFamily: "Playfair Display, serif",
+                    color: "#1e1a2e",
+                  }}
+                >
+                  Quotes Collection
+                </h2>
+                <p className="text-sm mt-0.5" style={{ color: "#a598cc" }}>
+                  {quotes.length} quotes loaded
+                </p>
+              </div>
+              <div
+                className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border"
+                style={{
+                  backgroundColor: "#e8e3f5",
+                  borderColor: "#c8c0e4",
+                  color: "#5b4ea0",
+                }}
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path d="M9.983 3v7.391c0 5.704-3.731 9.57-8.983 10.609l-.995-2.151c2.432-.917 3.995-3.638 3.995-5.849h-4v-10h9.983zm14.017 0v7.391c0 5.704-3.748 9.571-9 10.609l-.996-2.151c2.433-.917 3.996-3.638 3.996-5.849h-3.983v-10h9.983z" />
+                </svg>
+                Quote Gallery
+              </div>
+            </div>
+
+            <div className="columns-1 sm:columns-2 lg:columns-3 gap-5">
+              {quotes.map((q, i) => (
+                <QuoteCard key={q.id} quote={q} index={i} />
+              ))}
+            </div>
+          </>
+        )}
+      </main>
+
+      {/* Footer */}
+      <footer className="text-center py-8 text-sm" style={{ color: "#a598cc" }}>
+        <p>Powered by Quotara &copy; {new Date().getFullYear()}</p>
+      </footer>
+    </div>
+  );
 }
-
-export default App
