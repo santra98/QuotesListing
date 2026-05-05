@@ -1,16 +1,53 @@
-# React + Vite
+# Quotara
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Quotara is a small quote gallery built with React and Vite. It pulls quotes from a public API and lays them out in a clean, card-based interface that feels light and a little editorial. The goal of the app is simple: load interesting quotes, make them easy to browse, and let people copy the ones they like without friction.
 
-Currently, two official plugins are available:
+## What the app does
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+When the app loads, it requests quote data from `https://api.freeapi.app/api/v1/public/quotes`. If the request works, the quotes appear in a responsive multi-column layout. If it fails, the user sees a friendly error message and a retry button instead of a broken screen.
 
-## React Compiler
+Each quote card shows:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- the quote text
+- the author
+- any available tags
+- a few small bits of metadata like quote id, length, and date
+- a copy button for quickly saving the quote to the clipboard
 
-## Expanding the ESLint configuration
+The copy action now gives clear feedback. After a user clicks the button, it briefly changes to `Copied` with a success-style look, so there’s no guessing about whether it worked.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Main pieces of the app
+
+### `src/App.jsx`
+
+This is where the main app logic lives.
+
+- It fetches quotes from the API.
+- It keeps track of `loading`, `error`, and `quotes` state.
+- It decides whether the user should see skeleton cards, an error state, or the final gallery.
+
+If you want to change how data is loaded or how the app reacts to API failures, this is the first file to check.
+
+### `src/components/Header.jsx`
+
+This component handles the top bar of the app.
+
+- It shows the `Quotara` brand.
+- It displays a short tagline on larger screens.
+- It shows the number of loaded quotes once data is available.
+
+### `src/components/QuoteCard.jsx`
+
+This is the heart of the UI. Each quote card is rendered here.
+
+- The quote text is the main focus.
+- Author information is shown underneath.
+- Tags are rendered as colored pills.
+- Metadata appears at the bottom.
+- The copy button lives here too.
+
+This component also handles the small copied-state interaction that gives the user visual confirmation after clicking the copy button.
+
+### `src/components/SkeletonCard.jsx`
+
+This component is only shown while data is loading. It mirrors the shape of a real quote card so the page doesn’t jump around while content is coming in.
